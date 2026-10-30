@@ -1,4 +1,4 @@
-\# freight-curb-allocation
+# freight-curb-allocation
 
 
 
@@ -10,7 +10,7 @@ by improving the allocation and use of existing loading zones.
 
 
 
-\## Folder structure
+## Folder structure
 
 
 
