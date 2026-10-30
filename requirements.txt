@@ -1,0 +1,21 @@
+# Data
+pandas
+numpy
+scipy
+
+# Geospatial / network
+geopandas
+shapely
+networkx
+osmnx
+
+# Optimization
+gurobipy
+pyomo
+
+# Visualization
+matplotlib
+folium
+
+# Notebooks
+jupyter
