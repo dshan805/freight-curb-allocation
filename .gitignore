@@ -1,0 +1,38 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+*.egg-info/
+
+# Data files
+data/raw/
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.json
+*.pkl
+*.h5
+*.sqlite
+*.db
+*.zip
+
+# Outputs
+output/
+results/
+*.log
+
+# OS / editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
