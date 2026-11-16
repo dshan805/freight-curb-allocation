@@ -13,7 +13,7 @@ env/
 *.egg-info/
 
 # Data files
-data/raw/
+data/
 *.csv
 *.xlsx
 *.xls

@@ -8,6 +8,7 @@ geopandas
 shapely
 networkx
 osmnx
+contextily
 
 # Optimization
 gurobipy
