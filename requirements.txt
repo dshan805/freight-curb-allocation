@@ -2,6 +2,7 @@
 pandas
 numpy
 scipy
+statsmodels
 
 # Geospatial / network
 geopandas
@@ -13,10 +14,12 @@ contextily
 # Optimization
 gurobipy
 pyomo
+scikit-learn
 
 # Visualization
 matplotlib
 folium
+seaborn
 
 # Notebooks
 jupyter
