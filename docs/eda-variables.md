@@ -1,6 +1,6 @@
 # EDA notebook: the data pipeline
 
-Guide to `notebooks/01-eda.ipynb`. It tracks only the dataframes where the base data changes: cleaning, filtering, joining, and adding or removing rows or columns. Tables and charts made for a single analysis aren't listed. Row counts come from the notebook's saved outputs as of 2026-11-24. If you change the pipeline or rename things, update this file.
+Guide to `notebooks/01-eda.ipynb`. It tracks only the dataframes where the base data changes: cleaning, filtering, joining, and adding or removing rows or columns. Tables and charts made for a single analysis aren't listed. Row counts come from the notebook's saved outputs as of 2026-11-25. If you change the pipeline or rename things, update this file.
 
 ## Naming convention
 
@@ -23,6 +23,7 @@ flowchart TD
 
     idax1_loading_zones -->|"join weather on date and start hour,<br/>add date, hour, temperature_2m, precipitation,<br/>rain, duration_min"| idax1_with_weather["idax1_with_weather<br/>1,870 rows"]
     WEATHERAPI["Open-Meteo API"] --> weather_hourly["weather_hourly"] --> idax1_with_weather
+    idax1_with_weather -->|"add fine from SPACETYPE<br/>(same dataframe)"| idax1_with_fine["idax1_with_weather<br/>1,870 rows"]
 
     idax1_with_weather -->|"its 28 ELMNTKEY values"| idax_keys["idax_keys"]
     idax_keys -->|"keep those segments"| gis_curb_idax_segments["gis_curb_idax_segments<br/>68 rows"]
@@ -52,6 +53,7 @@ flowchart TD
 | `idax1_loading_zones` | `idax_1_area` | Filtered to 6 loading zone `SPACETYPE` codes, added `illegally_parked` (`activity_type == 'Private'`: 1,066 True, 804 False) | 1,870 |
 | `weather_hourly` | Open-Meteo API (Seattle, 2024-04-30 to 2024-06-13) | Loaded hourly `temperature_2m` and `precipitation`, added `date` and `hour` | one row per hour |
 | `idax1_with_weather` | `idax1_loading_zones` | Added `date` (from `Date`) and `hour` (from `park_start`), joined to `weather_hourly` on both, added `temperature_2m`, `precipitation`, `rain` (precipitation above 0: 287 rain, 1,583 dry), `duration_min` (from `total_duration`) | 1,870 |
+| `idax1_with_weather` (same name) | `idax1_with_weather` | Added `fine` in dollars from `SPACETYPE`: 78 for `CVLZ` (1,389 rows), `PS-CVLZ` (153) and `CVLZ/PS` (148); 63 for `L/UL` (112), `LOAD` (58) and `PS-VEN` (10) | 1,870 |
 | `idax_keys` | `idax1_with_weather` | The 28 unique `ELMNTKEY` values (street segments) in the survey | 28 values |
 | `gis_curb_idax_segments` | `gis_loading` | Filtered to the 28 surveyed `ELMNTKEY` values. Despite the name it holds only loading zones, not all curb space. The distances no longer use it | 68 |
 | `segments` | `gis_curb_spaces` | Filtered to all curb space on the surveyed keys, reprojected to EPSG:32610 (meters), merged to one row per `ELMNTKEY` (the index), keeps `PAIDAREA`, `SIDE`, `BLOCKID`, added `x_m`, `y_m` (central point) | 28 |
@@ -59,7 +61,7 @@ flowchart TD
 | `segment_straight_m` | `segments` | Straight-line distance in meters between every pair of central points | 28 x 28 |
 | `segment_walking_m` | `segments`, `street_graph` | Walking distance in meters: each central point snapped to its nearest street node, then shortest path by `length` | 28 x 28 |
 
-All the analysis cells below the weather join use `idax1_with_weather`. Watch out for `gis_loading` versus `idax1_loading_zones`: `gis_loading` describes the zones (the curb itself), and `idax1_loading_zones` describes vehicles seen at them.
+All the analysis cells below the weather join use `idax1_with_weather`. The `fine` column is added right after the join, in the "Adding fine data" section. Watch out for `gis_loading` versus `idax1_loading_zones`: `gis_loading` describes the zones (the curb itself), and `idax1_loading_zones` describes vehicles seen at them.
 
 ## Data problems we found
 
@@ -68,6 +70,7 @@ All the analysis cells below the weather join use `idax1_with_weather`. Watch ou
 - **Rows with a missing start, end or duration are removed in `idax_1_clean`** (662 of 8,182). The 662 are probably the longest stays (vehicles there before or after observers).
 - **Survey covers weekdays only**, from 2024-04-30 to 2024-06-13 (23 days). There is no Saturday or Sunday data. In `idax1_loading_zones`: Thursday 537, Wednesday 509, Tuesday 393, Friday 290 and Monday 141 stays. Belltown has no Monday data at all, so any weekday-by-area chart has an empty Monday for Belltown.
 - **The survey stops at about 7 PM.** Arrivals at 6 PM or later (636 rows) are removed in the cleaning section, because the cutoff cuts their durations short.
+- **`park_start` and `park_end` are text.** `.min()` or sorting compares them character by character, so `10:00:00` comes before `7:00:00`. Convert with `pd.to_timedelta` first. The earliest arrival is just after 7:00.
 - **`total_duration` is `park_end` minus `park_start`.** In an earlier check on a 2,056-row loading zone set, 2,054 rows matched to within a second.
 - **Only 28 street segments are covered**, in Belltown and Denny Triangle. Of the 255 segments there with at least one loading zone in `gis_loading`, the survey covers 28 (11%): 17 of 176 in Belltown and 11 of 79 in Denny Triangle.
 - **`ELMNTKEY` is the location unit.** Using all curb space, each surveyed key has one side and one block ID, and spans about 75 to 125 m. A parking event can't be tied to a specific curb space within a key. There are 28 keys but 18 `unitdesc` values, because some descriptions cover more than one key.
