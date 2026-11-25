@@ -118,7 +118,8 @@ u_{jkt} \le \sum_{p \in P \,:\, p \le t \le p + 479} v_{kp} \qquad \forall j, k,
 ```
 
 7. Walking time, which also keeps an officer to one segment at a time, for all
-   $k$, $j \ne l$ and $0 \le t' - t \le \tau_{jl}$:
+   $k$, $j \ne l$ and
+   $t' - t \in \{0, \dots, \tau_{jl}\}$:
 
 ```math
 u_{jkt} + u_{lkt'} \le 1
